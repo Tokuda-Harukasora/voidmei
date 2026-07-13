@@ -1,0 +1,14 @@
+target/
+**/*.class
+bin/
+data/
+fonts/
+records/
+voice/
+VoidMei.exe
+VoidMei.jar
+*.zip
+*.exe
+*.dll
+*.csv
+sources.txt

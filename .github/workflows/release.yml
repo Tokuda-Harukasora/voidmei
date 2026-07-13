@@ -1,0 +1,40 @@
+name: Release Portable Zip
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'zulu'
+
+      - name: Download JRE 8
+        run: |
+          curl -L -o jre.zip https://cdn.azul.com/zulu/bin/zulu8.84.0.21-ca-jre8.0.522-win_x64.zip
+          Expand-Archive jre.zip temp_jre
+          $jreDir = Get-ChildItem temp_jre -Directory | Select-Object -First 1
+          Move-Item $jreDir.FullName jre
+        shell: pwsh
+
+      - name: Build Portable Zip
+        run: |
+          pwsh ./script/build_portable.ps1 -OutputDir "." -Version "${{ github.ref_name }}"
+        shell: pwsh
+
+      - name: Upload Release Asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: VoidMei_便携版.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

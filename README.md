@@ -1,5 +1,20 @@
 # VoidMei - 战争雷霆8111端口Java图形前端
 
+## Bug 修复记录 (2026-07-14)
+
+**第一轮：FM 加载死循环 & 预览模式误触发重启**
+- **Service 提前触发 S4toS1**：预览模式下 `cur_fmtype` 与游戏机型不匹配时误调用 `S4toS1` 关闭 overlay，修复为仅在 `PREVIEW` 状态检测机型变更。
+- **FM 加载无限循环**：`loadFMData` 失败时 `loadedFMName` 未更新，导致 `getBlkx()` 反复重试加载不存在的 FM。修复为无论如何都设置 `loadedFMName`。
+- **changeS3 破坏 FM 缓存**：每轮轮询重置 `identifiedFMName`，导致已加载的 fallback FM 被丢弃重新加载。修复为仅在 `cur_fmtype` 真正变更时更新。
+
+**第二轮：JSON 格式 FM 数据兼容 & UI 崩溃防护**
+- **JSON 格式 FM 崩溃**：新版战争雷霆的 FM 数据为 JSON 格式，`Blkx.getlastone` 查找 `=` 无边界检查导致 `StringIndexOutOfBoundsException`。修复为向前找 `=` + 边界保护。
+- **`getlastone` 误去引号**：返回值去掉了引号，但 `loadFMData` 再次去引号导致路径截断（如 `xxx.blk` → `xxx.bl`）。修复为保留原始引号。
+- **`getload()` 无异常保护**：解析失败时构造函数崩溃，`valid` 状态未设置。添加 try-catch + JSON 格式自动检测（`{` 开头直接标记无效）。
+- **FM 事件发布时序**：`FM_DATA_LOADED` 在缓存变量更新前发布，事件处理器触发时缓存未命中。修复为先更新缓存再发布事件。
+- **HUDCalculator NPE 崩溃**：FM 数据不完整时 UI 线程反复 NPE。添加 try-catch 防护。
+- **新增 `script/json2blk.py`**：JSON 格式 FM 数据转 Dagor `.blk` 格式的转换脚本。
+
 # 工作原理
 - 通过HTTP/GET请求读取127.0.01:8111端口中的飞行状态(state)以及飞行仪表(indicators)数据
 - 解析离线拆包的气动模型文件(FM blkx)

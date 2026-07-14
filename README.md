@@ -14,6 +14,7 @@
 - **FM 事件发布时序**：`FM_DATA_LOADED` 在缓存变量更新前发布，事件处理器触发时缓存未命中。修复为先更新缓存再发布事件。
 - **HUDCalculator NPE 崩溃**：FM 数据不完整时 UI 线程反复 NPE。添加 try-catch 防护。
 - **新增 `script/json2blk.py`**：JSON 格式 FM 数据转 Dagor `.blk` 格式的转换脚本。
+#- **！！这个AI写的转换脚本似乎并不能真的解决问题，等我想想办法！！**
 
 # 工作原理
 - 通过HTTP/GET请求读取127.0.01:8111端口中的飞行状态(state)以及飞行仪表(indicators)数据

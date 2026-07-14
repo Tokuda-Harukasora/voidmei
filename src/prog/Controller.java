@@ -196,8 +196,12 @@ public class Controller {
 			// 自动隐藏任务栏
 
 			// 初始化MapObj以及Msg、gamechat
-			cur_fmtype = S.sIndic.type;
-			identifiedFMName = cur_fmtype;
+			// 修复: 仅在 cur_fmtype 真正变更时更新 identifiedFMName
+			String newType = S.sIndic.type;
+			if (cur_fmtype == null || !newType.equalsIgnoreCase(cur_fmtype)) {
+				cur_fmtype = newType;
+				identifiedFMName = cur_fmtype;
+			}
 			// Removed getfmdata call - Service will trigger load via calculate or start
 			// Application.debugPrint("状态3，连接成功，释放状态条，打开面板");
 			// usetempratureInformation =
@@ -930,8 +934,13 @@ public class Controller {
 
 			// Update FM data adapter for FMUnpackedDataOverlay
 			fmDataAdapter.setBlkx(Blkx);
+		}
 
-			// Notify observers that FM data is ready
+		// 修复: 先更新缓存状态，再发布事件，避免事件处理器触发时缓存未命中
+		loadedFMName = planename;
+		if (Blkx != null && Blkx.valid) {
+			identifiedFMName = planename;
+			// Notify observers that FM data is ready (必须在缓存更新之后)
 			prog.event.UIStateBus.getInstance().publish(prog.event.UIStateEvents.FM_DATA_LOADED, planename);
 		}
 

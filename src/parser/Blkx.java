@@ -1641,11 +1641,24 @@ public class Blkx {
 			}
 			readFileName = name;
 			data = sb.toString();
-			if (doLoad) {
-				this.getload();
+			// 修复: 检测 JSON 格式的 FM 数据 (以 '{' 开头), 标记为无效避免解析崩溃
+			if (data.trim().startsWith("{")) {
+				prog.util.Logger.warn("Blkx", "JSON format FM data detected, marking as invalid: " + name);
+				fmdata = Lang.noblkx + " (JSON format not supported)";
+				valid = false;
+			} else if (doLoad) {
+				try {
+					this.getload();
+					valid = true;
+				} catch (Exception e) {
+					// 修复: getload 解析失败时标记为无效，避免构造函数崩溃
+					prog.util.Logger.error("Blkx", "FM parsing failed for: " + name + " - " + e.toString());
+					fmdata = Lang.noblkx;
+					valid = false;
+				}
+			} else {
+				valid = true;
 			}
-
-			valid = true;
 		} else {
 			valid = false;
 		}
@@ -1727,13 +1740,21 @@ public class Blkx {
 		bix = text.toUpperCase().lastIndexOf(label.toUpperCase());
 		if (bix == -1)
 			return null;
-		while (text.charAt(bix) != '=')
+		// 修复: 向前找到 = 号 (Dagor格式: label:type = value)，不再自行去引号
+		int len = text.length();
+		while (bix < len && text.charAt(bix) != '=')
 			bix++;
-		bix++;
+		if (bix >= len)
+			return null;
+		bix++; // 跳过 =
+		// 跳过空格和制表符，但保留引号由调用者处理
+		while (bix < len && (text.charAt(bix) == ' ' || text.charAt(bix) == '\t'))
+			bix++;
 		eix = bix;
-		while (text.charAt(eix) != '\n')
+		while (eix < len && text.charAt(eix) != '\n')
 			eix++;
-		value = text.substring(bix, eix);
+		value = text.substring(bix, eix).trim();
+		// 调用者(loadFMData)期望带引号的原始值，如 "fm/yak_130_early.blk"
 		return value;
 	}
 
@@ -1757,13 +1778,19 @@ public class Blkx {
 		bix = text.toUpperCase().indexOf(label.toUpperCase());
 		if (bix == -1)
 			return "null";
-		while (text.charAt(bix) != '=')
+		// 修复: 向前找到 = 号，保留引号由调用者处理
+		int len = text.length();
+		while (bix < len && text.charAt(bix) != '=')
 			bix++;
+		if (bix >= len)
+			return "null";
 		bix++;
+		while (bix < len && (text.charAt(bix) == ' ' || text.charAt(bix) == '\t'))
+			bix++;
 		eix = bix;
-		while (text.charAt(eix) != '\n')
+		while (eix < len && text.charAt(eix) != '\n')
 			eix++;
-		value = text.substring(bix, eix);
+		value = text.substring(bix, eix).trim();
 		return value;
 	}
 
@@ -1788,13 +1815,19 @@ public class Blkx {
 		bix = text.indexOf(label);
 		if (bix == -1)
 			return "null";
-		while (text.charAt(bix) != '=')
+		// 修复: 向前找到 = 号，保留引号由调用者处理
+		int len = text.length();
+		while (bix < len && text.charAt(bix) != '=')
 			bix++;
+		if (bix >= len)
+			return "null";
 		bix++;
+		while (bix < len && (text.charAt(bix) == ' ' || text.charAt(bix) == '\t'))
+			bix++;
 		eix = bix;
-		while (text.charAt(eix) != '\n')
+		while (eix < len && text.charAt(eix) != '\n')
 			eix++;
-		value = text.substring(bix, eix);
+		value = text.substring(bix, eix).trim();
 		return value;
 	}
 

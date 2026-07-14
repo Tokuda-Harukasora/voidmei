@@ -18,6 +18,7 @@ public class HUDCalculator {
     public static HUDData calculate(prog.event.FlightDataEvent event, ui.model.TelemetrySource source, parser.Blkx blkx,
             HUDSettings settings,
             MinimalHUDContext ctx) {
+        try {
         HUDData.Builder b = new HUDData.Builder();
 
         if (event == null || source == null)
@@ -271,6 +272,11 @@ public class HUDCalculator {
         }
 
         return b.build();
+        } catch (Exception e) {
+            // 修复: 防止 JSON 格式 FM 或其他异常导致 UI 线程崩溃
+            prog.util.Logger.error("HUDCalculator", "Calculation failed, returning empty HUD data", e);
+            return new HUDData.Builder().build();
+        }
     }
 
     private static double getFlapAllowAngle(double ias, boolean isDowningFlap, Blkx blkx) {

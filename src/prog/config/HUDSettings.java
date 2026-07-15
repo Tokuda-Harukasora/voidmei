@@ -51,4 +51,11 @@ public interface HUDSettings extends OverlaySettings {
     boolean isGPUCompatibilityMode();
 
     boolean alwaysShowRadarAltitude();
+
+    /**
+     * 现代战斗机 HUD 风格开关。
+     * 启用后使用磁带式空速/高度/航向显示，替代经典行布局。
+     * @return true = 现代战机HUD风格（默认）
+     */
+    boolean isModernHudStyle();
 }

@@ -740,5 +740,11 @@ public class ConfigurationService implements ConfigProvider {
         public boolean alwaysShowRadarAltitude() {
             return getBool("alwaysShowRadarAltitude", false);
         }
+
+        @Override
+        public boolean isModernHudStyle() {
+            // 默认 true: 启用现代战斗机HUD风格
+            return getBool("modernHudStyle", true);
+        }
     }
 }
